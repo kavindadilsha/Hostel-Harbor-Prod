@@ -38,7 +38,7 @@ class ViewBookingsPage extends StatelessWidget {
           return StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('reservations')
-                .where('ownerId', isEqualTo: ownerId)
+                .where('placeData.ownerId', isEqualTo: ownerId)
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, reservationSnapshot) {
@@ -49,8 +49,6 @@ class ViewBookingsPage extends StatelessWidget {
 
               if (!reservationSnapshot.hasData ||
                   reservationSnapshot.data!.docs.isEmpty) {
-                print('Current Owner UID: $ownerId');
-
                 return const Center(child: Text('No reservations found.'));
               }
 
@@ -62,34 +60,40 @@ class ViewBookingsPage extends StatelessWidget {
                   final data =
                       reservations[index].data() as Map<String, dynamic>;
 
+                  final seekerName = data['seekerName'] ?? 'Unknown';
+                  final seekerEmail = data['seekerEmail'] ?? 'No Email';
+                  final seekerPhone = data['seekerPhone'] ?? 'No Phone';
+                  final paymentMethod = data['paymentMethod'] ?? 'N/A';
+                  final amount = data['amount'] ?? 'N/A';
+                  final place = data['placeData'] ?? {};
+                  final address = place['address'] ?? 'N/A';
+                  final timestamp = data['createdAt'];
+                  final date = timestamp is Timestamp
+                      ? timestamp.toDate().toString().split('.')[0]
+                      : 'N/A';
+
                   return Card(
                     margin: const EdgeInsets.all(10),
-                    elevation: 5,
+                    elevation: 4,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
                       leading: Image.asset(
                         'assets/3.jpg',
-                        width: 100,
-                        height: 100,
+                        width: 80,
+                        height: 80,
                         fit: BoxFit.cover,
                       ),
-                      title: Text(data['seekerName'] ?? 'Seeker'),
+                      title: Text(seekerName,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Address: ${data['placeAddress'] ?? 'N/A'}"),
-                          Text("Payment: ${data['paymentMethod'] ?? 'N/A'}"),
-                          Text(
-                              "Seeker Contact: ${data['seekerEmail'] ?? 'N/A'}"),
-                          Text("Amount: ${data['amount'] ?? 'N/A'} LKR"),
-                          const SizedBox(height: 4),
-                          Text(
-                            data['createdAt'] != null
-                                ? 'Date: ${(data['createdAt'] as Timestamp).toDate()}'
-                                : '',
-                            style: const TextStyle(fontSize: 12),
-                          ),
+                          Text("Email: $seekerEmail"),
+                          Text("Phone: $seekerPhone"),
+                          Text("Payment: $paymentMethod"),
+                          Text("Amount: Rs. $amount"),
+                          Text("Reserved At: $date"),
                         ],
                       ),
                       isThreeLine: true,
