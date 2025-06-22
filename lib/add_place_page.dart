@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AddPlacePage extends StatefulWidget {
@@ -9,28 +11,67 @@ class AddPlacePage extends StatefulWidget {
 
 class _AddPlacePageState extends State<AddPlacePage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _ownerNameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final _ownerNameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _roomsController = TextEditingController();
+  bool _isLoading = false;
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final ownerName = _ownerNameController.text.trim();
-      final address = _addressController.text.trim();
-      final phone = _phoneController.text.trim();
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      // For now, just print the values to the console
-      ("Owner: $ownerName\nAddress: $address\nPhone: $phone");
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+
+      await FirebaseFirestore.instance.collection('places').add({
+        'ownerName': _ownerNameController.text.trim(),
+        'address': _addressController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'price': _priceController.text.trim(),
+        'rooms': _roomsController.text.trim(),
+        'ownerId': uid,
+        'createdAt': Timestamp.now(),
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Place added successfully!')),
       );
 
-      // Clear the fields
-      _ownerNameController.clear();
-      _addressController.clear();
-      _phoneController.clear();
+      _formKey.currentState?.reset();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    TextInputType type = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: type,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      validator: validator ??
+          (v) => (v == null || v.isEmpty) ? 'Please enter $label' : null,
+    );
   }
 
   @override
@@ -41,61 +82,57 @@ class _AddPlacePageState extends State<AddPlacePage> {
         backgroundColor: const Color.fromARGB(255, 10, 10, 87),
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: Column(
             children: [
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _ownerNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Owner\'s Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter owner\'s name'
-                    : null,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Address',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter address'
-                    : null,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
+              _buildTextField(
+                  label: "Owner's Name", controller: _ownerNameController),
+              const SizedBox(height: 16),
+              _buildTextField(label: "Address", controller: _addressController),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: "Phone Number",
                 controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
-                  }
-                  if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-                    return 'Enter a valid 10-digit phone number';
+                type: TextInputType.phone,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Enter phone number';
+                  if (!RegExp(r'^\d{10}$').hasMatch(v)) {
+                    return 'Enter valid 10-digit phone number';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 10, 10, 87),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                ),
-                child: const Text('Submit', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: "Price",
+                controller: _priceController,
+                type: TextInputType.number,
               ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: "Number of Rooms",
+                controller: _roomsController,
+                type: TextInputType.number,
+              ),
+              const SizedBox(height: 24),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 10, 10, 87),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                        ),
+                        child: const Text('Submit',
+                            style: TextStyle(fontSize: 18)),
+                      ),
+                    ),
             ],
           ),
         ),

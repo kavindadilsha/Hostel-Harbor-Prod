@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,6 +17,25 @@ class HomePageState extends State<HomePage> {
   ];
   String selectedHostelType = 'Single Person Space';
 
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      // Also sign out from Google if applicable
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+
+      // Navigate back to login screen
+      Navigator.pushReplacementNamed(context, '/login/seeker');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,6 +51,14 @@ class HomePageState extends State<HomePage> {
             fontSize: 16,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout,
+                color: Color.fromARGB(255, 66, 66, 66)),
+            onPressed: _logout,
+            tooltip: 'Logout',
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -71,17 +100,13 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // ✅ Fixed image widget
               Image.asset(
                 "assets/singlehome.png",
                 width: double.infinity,
                 height: 200,
                 fit: BoxFit.cover,
               ),
-
               const SizedBox(height: 30),
-
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pushNamed(context, '/available_hostels');
@@ -93,7 +118,7 @@ class HomePageState extends State<HomePage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  foregroundColor: Colors.white,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
                   textStyle: const TextStyle(fontSize: 18),

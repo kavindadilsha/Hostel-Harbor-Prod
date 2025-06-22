@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+
+      Navigator.pushReplacementNamed(context, '/login/admin');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +37,14 @@ class AdminHomePage extends StatelessWidget {
             fontSize: 16,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout,
+                color: Color.fromARGB(255, 66, 66, 66)),
+            onPressed: () => _logout(context),
+            tooltip: 'Logout',
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Center(

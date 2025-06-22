@@ -13,8 +13,13 @@ import 'package:flutter_application_2/seeker.dart';
 import 'package:flutter_application_2/seeker_login_page.dart';
 import 'package:flutter_application_2/seeker_signup_page.dart';
 
+// ignore: duplicate_import
+import 'package:firebase_core/firebase_core.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const HostelHarborApp());
 
   if (kIsWeb) {
     await Firebase.initializeApp(

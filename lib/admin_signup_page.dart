@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AdminSignupPage extends StatefulWidget {
   const AdminSignupPage({super.key});
@@ -13,6 +16,125 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> signUpUser(String name, String email, String password) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'name': name,
+        'email': email,
+        'role': 'admin',
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signup successful')),
+      );
+
+      Navigator.pushReplacementNamed(context, '/login/admin');
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Unexpected error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> signUpWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Store admin info in Firestore (if not already exists)
+      final docRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid);
+
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        await docRef.set({
+          'name': googleUser.displayName ?? '',
+          'email': googleUser.email,
+          'role': 'admin',
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google signup successful')),
+      );
+
+      Navigator.pushReplacementNamed(context, '/admin');
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Google Sign-Up failed: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Widget _buildGoogleButton() {
+    return OutlinedButton.icon(
+      onPressed: signUpWithGoogle,
+      icon: Image.asset('assets/google_logo.png', height: 24),
+      label: const Text('Sign Up with Google'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        textStyle: const TextStyle(fontSize: 16),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +145,14 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
           key: _formKey,
           child: Column(
             children: [
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
@@ -49,25 +179,37 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
                     : null,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.pushNamed(context, '/login/admin');
-                  }
-                },
-                // ignore: sort_child_properties_last
-                child: const Text('Sign Up'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 10, 10, 87),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 95, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
-              ),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              signUpUser(
+                                _nameController.text.trim(),
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              );
+                            }
+                          },
+                          child: const Text('Sign Up'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 10, 10, 87),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 95, vertical: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            textStyle: const TextStyle(fontSize: 18),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildGoogleButton(),
+                      ],
+                    ),
             ],
           ),
         ),

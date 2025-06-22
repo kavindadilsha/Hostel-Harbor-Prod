@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "64194359384",
+    "project_id": "hostelharborapp-13bb0",
+    "storage_bucket": "hostelharborapp-13bb0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64194359384:android:f4a2e25ecd32e2bf69da2d",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "64194359384-46gjm12pre35b16ulhthu3oka5me7fpq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8qqqpxhCUN3qjPsol2B2NVrsX5EVmxJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "64194359384-46gjm12pre35b16ulhthu3oka5me7fpq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "64194359384-uhgu2okgakd8dl9jrehmun4llshdsn46.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApplication2"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
