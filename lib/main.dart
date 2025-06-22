@@ -8,19 +8,12 @@ import 'package:flutter_application_2/admin_manage.dart';
 import 'package:flutter_application_2/admin_signup_page.dart';
 import 'package:flutter_application_2/admin_view.dart';
 import 'package:flutter_application_2/hostels.dart';
-import 'package:flutter_application_2/payment.dart';
 import 'package:flutter_application_2/seeker.dart';
 import 'package:flutter_application_2/seeker_login_page.dart';
 import 'package:flutter_application_2/seeker_signup_page.dart';
 
-// ignore: duplicate_import
-import 'package:firebase_core/firebase_core.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const HostelHarborApp());
-
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: FirebaseOptions(
@@ -52,13 +45,13 @@ class HostelHarborApp extends StatelessWidget {
           secondary: Colors.amber,
         ),
       ),
-      initialRoute: '/', // Define the initial route
+      initialRoute: '/',
       routes: {
         '/': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
         '/admin': (context) => const AdminHomePage(),
         '/available_hostels': (context) => const AvailableHostelsPage(),
-        '/payment': (context) => const PaymentPage(),
+        // '/payment' route removed since PaymentPage needs arguments
         '/admin/hostels': (context) => const ManageHostelsPage(),
         '/admin/bookings': (context) => const ViewBookingsPage(),
         '/admin/add-place': (context) => const AddPlacePage(),
@@ -90,11 +83,9 @@ class LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor:
-            const Color.fromARGB(255, 255, 255, 255), // White background
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         appBar: AppBar(
-          backgroundColor:
-              const Color.fromARGB(255, 5, 35, 87), // Deep green app bar
+          backgroundColor: const Color.fromARGB(255, 5, 35, 87),
           shadowColor: Colors.black87,
           title: const Text(
             "Good Morning Kavinda",
@@ -108,21 +99,19 @@ class LoginPageState extends State<LoginPage> {
               onPressed: () {},
               icon: const Icon(
                 Icons.menu,
-                color: Colors.white, // Set icon color to white
+                color: Colors.white,
               ),
             ),
           ],
         ),
         body: Stack(
           children: [
-            // Full-screen background image
             Positioned.fill(
               child: Image.asset(
-                "assets/bg.jpg", // Replace with your image path
+                "assets/bg.jpg",
                 fit: BoxFit.cover,
               ),
             ),
-            // Main content
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Center(
@@ -132,51 +121,39 @@ class LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 2),
                     Image.asset(
                       "assets/logo.png",
-                      width: 200, // Adjust size as needed
+                      width: 200,
                       height: 150,
                     ),
-                    // Text(
-                    //   "Welcome to Hostel Harbour",
-                    //   style: TextStyle(
-                    //     fontWeight: FontWeight.w600,
-                    //     fontSize: 20,
-                    //     color: Color.fromARGB(255, 255, 255,
-                    //         255), // Text color for better visibility
-                    //   ),
-                    // ),
                     const SizedBox(height: 5),
                     Image.asset(
                       "assets/lottie2.png",
-                      width: 250, // Adjust size as needed
+                      width: 250,
                       height: 250,
                     ),
-
                     const SizedBox(height: 5),
                     Text(
                       isAdmin ? 'I am a house owner' : 'I am a seeker',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(
-                            255, 56, 56, 56), // Ensure visibility
+                        color: Color.fromARGB(255, 56, 56, 56),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Gradient button
                     Container(
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color.fromARGB(255, 255, 255, 255),
-                            const Color.fromARGB(255, 255, 255, 255),
-                          ], // Green to Black gradient
+                            Color.fromARGB(255, 255, 255, 255),
+                            Color.fromARGB(255, 255, 255, 255),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: Colors.grey, // Grey border color
-                          width: 0.5, // Border width 0.5px
+                          color: Colors.grey,
+                          width: 0.5,
                         ),
                       ),
                       child: ElevatedButton.icon(
@@ -199,16 +176,15 @@ class LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Another gradient button for login
                     Container(
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color.fromARGB(255, 76, 84, 175),
-                            const Color.fromARGB(255, 0, 0, 0),
-                          ], //,
+                            Color.fromARGB(255, 76, 84, 175),
+                            Color.fromARGB(255, 0, 0, 0),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),

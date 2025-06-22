@@ -1,7 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/seeker.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+  final String placeId;
+  final Map<String, dynamic> placeData;
+
+  const PaymentPage(
+      {super.key, required this.placeId, required this.placeData});
 
   @override
   PaymentPageState createState() => PaymentPageState();
@@ -17,27 +23,46 @@ class PaymentPageState extends State<PaymentPage> {
 
   String selectedPaymentMethod = 'Credit Card';
 
-  void _makePayment() {
-    // Simulate payment processing
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Almost Done! '),
-          content: const Text(
-              'Your payment has been processed successfully. one of our customer agent will contact you shortly.Thank you for choosing Hostel harbour.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pop(context); // Go back to previous page
-              },
+  Future<void> _makePayment() async {
+    try {
+      await FirebaseFirestore.instance.collection('reservations').add({
+        'placeId': widget.placeId,
+        'placeData': widget.placeData,
+        'paymentMethod': selectedPaymentMethod,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Simulate payment confirmation and redirect
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Reservation Confirmed'),
+            content: const Text(
+              'Your payment has been simulated and the reservation was successful.\n\nThank you for choosing Hostel Harbor.',
             ),
-          ],
-        );
-      },
-    );
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomePage()),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error making reservation: $e')),
+      );
+    }
   }
 
   @override
@@ -45,8 +70,7 @@ class PaymentPageState extends State<PaymentPage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        backgroundColor:
-            const Color.fromARGB(255, 255, 255, 255), // Deep green app bar
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         shadowColor: const Color.fromARGB(221, 255, 255, 255),
         title: const Text(
           "Payment platform",
