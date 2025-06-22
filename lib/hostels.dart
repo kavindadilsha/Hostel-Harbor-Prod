@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'payment.dart';
 
 class AvailableHostelsPage extends StatelessWidget {
   const AvailableHostelsPage({super.key});
@@ -39,7 +40,8 @@ class AvailableHostelsPage extends StatelessWidget {
           return ListView.builder(
             itemCount: hostels.length,
             itemBuilder: (context, index) {
-              final data = hostels[index].data() as Map<String, dynamic>;
+              final doc = hostels[index];
+              final data = doc.data() as Map<String, dynamic>;
 
               return Card(
                 margin: const EdgeInsets.all(10),
@@ -68,7 +70,15 @@ class AvailableHostelsPage extends StatelessWidget {
                   ),
                   trailing: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/payment');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentPage(
+                            placeId: doc.id,
+                            placeData: data,
+                          ),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.payment),
                     label: const Text('Reserve'),
