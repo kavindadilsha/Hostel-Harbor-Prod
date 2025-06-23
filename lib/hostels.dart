@@ -8,18 +8,10 @@ class AvailableHostelsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        shadowColor: const Color.fromARGB(221, 255, 255, 255),
-        title: const Text(
-          "Reserve your preferred stay",
-          style: TextStyle(
-            fontWeight: FontWeight.normal,
-            color: Color.fromARGB(255, 24, 24, 24),
-            fontSize: 16,
-          ),
-        ),
+        title: const Text("Reserve Your Preferred Stay"),
+        backgroundColor: const Color(0xFF1A237E),
+        foregroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -32,29 +24,36 @@ class AvailableHostelsPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No hostels available right now.'));
+            return const Center(
+              child: Text(
+                'No hostels available right now.',
+                style: TextStyle(fontSize: 16),
+              ),
+            );
           }
 
           final hostels = snapshot.data!.docs;
 
           return ListView.builder(
             itemCount: hostels.length,
+            padding: const EdgeInsets.all(16),
             itemBuilder: (context, index) {
               final doc = hostels[index];
               final data = doc.data() as Map<String, dynamic>;
 
               return Card(
-                margin: const EdgeInsets.all(10),
-                elevation: 5,
+                margin: const EdgeInsets.only(bottom: 20),
+                elevation: 4,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (data['imageUrl'] != null)
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(10)),
+                            top: Radius.circular(12)),
                         child: Image.network(
                           data['imageUrl'],
                           height: 180,
@@ -62,53 +61,56 @@ class AvailableHostelsPage extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
-                    ListTile(
-                      title: Text(
-                        data['address'] ?? 'Unnamed Hostel',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Owner: ${data['ownerName'] ?? 'N/A'}"),
-                            Text("Price: ${data['price'] ?? 'N/A'} LKR"),
-                            Text("Rooms: ${data['rooms'] ?? 'N/A'}"),
-                            Text("Contact: ${data['phone'] ?? 'N/A'}"),
-                          ],
-                        ),
-                      ),
-                      trailing: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PaymentPage(
-                                placeId: doc.id,
-                                placeData: data,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['address'] ?? 'Unnamed Hostel',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text("Owner: ${data['ownerName'] ?? 'N/A'}"),
+                          Text("Price: ${data['price'] ?? 'N/A'} LKR"),
+                          Text("Rooms: ${data['rooms'] ?? 'N/A'}"),
+                          Text("Contact: ${data['phone'] ?? 'N/A'}"),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PaymentPage(
+                                      placeId: doc.id,
+                                      placeData: data,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.payment),
+                              label: const Text('Reserve'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1A237E),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                textStyle: const TextStyle(fontSize: 16),
                               ),
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.payment),
-                        label: const Text('Reserve'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 10, 10, 87),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 10),
-                          textStyle: const TextStyle(fontSize: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                          )
+                        ],
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
+                    )
                   ],
                 ),
               );

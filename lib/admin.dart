@@ -25,78 +25,92 @@ class AdminHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: const Color(0xFFF4F4F4),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        shadowColor: const Color.fromARGB(221, 255, 255, 255),
+        backgroundColor: const Color(0xFFF4F4F4),
+        elevation: 0,
         title: const Text(
           "Manage your all ads",
           style: TextStyle(
-            fontWeight: FontWeight.normal,
-            color: Color.fromARGB(255, 24, 24, 24),
-            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+            fontSize: 18,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout,
-                color: Color.fromARGB(255, 66, 66, 66)),
+            icon: const Icon(Icons.logout, color: Colors.black87),
             onPressed: () => _logout(context),
             tooltip: 'Logout',
           )
         ],
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                )
+              ],
+            ),
             child: Column(
               children: [
                 Image.asset(
-                  "assets/admin.png", // Ensure this path is correct
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.contain,
+                  "assets/admin.png",
+                  height: 180,
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Manage your places',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  'Welcome, Admin!',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Manage your hostel listings and reservations efficiently.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.black87),
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, '/admin/add-place');
                   },
-                  icon: const Icon(Icons.home_work),
-                  label: const Text('Add new places'),
+                  icon: const Icon(Icons.home_work_outlined),
+                  label: const Text('Add New Places'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 10, 10, 87),
+                    backgroundColor: const Color(0xFF1A237E),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 95, vertical: 20),
+                    minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: const TextStyle(fontSize: 18),
+                    textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, '/admin/bookings');
                   },
-                  icon: const Icon(Icons.list),
+                  icon: const Icon(Icons.list_alt_rounded),
                   label: const Text('Active Reservations'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 10, 10, 87),
+                    backgroundColor: const Color(0xFF1A237E),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 80, vertical: 20),
+                    minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: const TextStyle(fontSize: 18),
+                    textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
               ],

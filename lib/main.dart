@@ -87,22 +87,22 @@ class LoginPageState extends State<LoginPage> {
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 5, 35, 87),
           shadowColor: Colors.black87,
-          title: const Text(
-            "Good Morning Kavinda",
-            style: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
-                fontSize: 16),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-              ),
-            ),
-          ],
+          // title: const Text(
+          //   "Good Morning Kavinda",
+          //   style: TextStyle(
+          //       fontWeight: FontWeight.normal,
+          //       color: Colors.white,
+          //       fontSize: 16),
+          // ),
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {},
+          //     icon: const Icon(
+          //       Icons.menu,
+          //       color: Colors.white,
+          //     ),
+          //   ),
+          // ],
         ),
         body: Stack(
           children: [
