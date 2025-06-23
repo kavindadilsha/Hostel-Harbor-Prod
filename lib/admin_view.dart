@@ -66,6 +66,7 @@ class ViewBookingsPage extends StatelessWidget {
                   final paymentMethod = data['paymentMethod'] ?? 'N/A';
                   final amount = data['amount'] ?? 'N/A';
                   final place = data['placeData'] ?? {};
+                  // ignore: unused_local_variable
                   final address = place['address'] ?? 'N/A';
                   final timestamp = data['createdAt'];
                   final date = timestamp is Timestamp

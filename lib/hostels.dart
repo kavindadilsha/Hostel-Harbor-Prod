@@ -48,53 +48,68 @@ class AvailableHostelsPage extends StatelessWidget {
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
-                child: ListTile(
-                  title: Text(
-                    data['address'] ?? 'Unnamed Hostel',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Owner: ${data['ownerName'] ?? 'N/A'}"),
-                        Text("Price: ${data['price'] ?? 'N/A'} LKR"),
-                        Text("Rooms: ${data['rooms'] ?? 'N/A'}"),
-                        Text("Contact: ${data['phone'] ?? 'N/A'}"),
-                      ],
-                    ),
-                  ),
-                  trailing: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PaymentPage(
-                            placeId: doc.id,
-                            placeData: data,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (data['imageUrl'] != null)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(10)),
+                        child: Image.network(
+                          data['imageUrl'],
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ListTile(
+                      title: Text(
+                        data['address'] ?? 'Unnamed Hostel',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Owner: ${data['ownerName'] ?? 'N/A'}"),
+                            Text("Price: ${data['price'] ?? 'N/A'} LKR"),
+                            Text("Rooms: ${data['rooms'] ?? 'N/A'}"),
+                            Text("Contact: ${data['phone'] ?? 'N/A'}"),
+                          ],
+                        ),
+                      ),
+                      trailing: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentPage(
+                                placeId: doc.id,
+                                placeData: data,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.payment),
+                        label: const Text('Reserve'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 10, 10, 87),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          textStyle: const TextStyle(fontSize: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.payment),
-                    label: const Text('Reserve'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 10, 10, 87),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      textStyle: const TextStyle(fontSize: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ],
                 ),
               );
             },
