@@ -7,8 +7,11 @@ class PaymentPage extends StatefulWidget {
   final String placeId;
   final Map<String, dynamic> placeData;
 
-  const PaymentPage(
-      {super.key, required this.placeId, required this.placeData});
+  const PaymentPage({
+    super.key,
+    required this.placeId,
+    required this.placeData,
+  });
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -29,11 +32,25 @@ class _PaymentPageState extends State<PaymentPage> {
     setState(() => _isProcessing = true);
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final seekerData = userDoc.data() ?? {};
+
       await FirebaseFirestore.instance.collection('reservations').add({
         'placeId': widget.placeId,
         'placeData': widget.placeData,
         'paymentMethod': selectedPaymentMethod,
-        'seekerId': FirebaseAuth.instance.currentUser!.uid,
+        'amount': widget.placeData['price'],
+        'seekerId': user.uid,
+        'seekerName': seekerData['name'] ?? 'Unknown',
+        'seekerEmail': seekerData['email'] ?? 'No Email',
+        'seekerPhone': seekerData['phone'] ?? 'No Phone',
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -52,7 +69,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     MaterialPageRoute(builder: (_) => const HomePage()));
               },
               child: const Text('OK'),
-            )
+            ),
           ],
         ),
       );
