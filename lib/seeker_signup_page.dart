@@ -14,6 +14,7 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
@@ -24,6 +25,7 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -44,6 +46,7 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
           .set({
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
         'role': 'seeker',
       });
 
@@ -87,6 +90,7 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
             .set({
           'name': userCred.user!.displayName ?? '',
           'email': userCred.user!.email ?? '',
+          'phone': '',
           'role': 'seeker',
         });
       }
@@ -115,10 +119,12 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
     required TextEditingController controller,
     required String? Function(String?) validator,
     bool obscure = false,
+    TextInputType inputType = TextInputType.text,
   }) =>
       TextFormField(
         controller: controller,
         obscureText: obscure,
+        keyboardType: inputType,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
@@ -185,6 +191,7 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
                   _buildInputField(
                     label: 'Email',
                     controller: _emailController,
+                    inputType: TextInputType.emailAddress,
                     validator: (v) {
                       if (v == null || v.isEmpty) return 'Enter email';
                       if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
@@ -192,6 +199,15 @@ class _SeekerSignupPageState extends State<SeekerSignupPage> {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInputField(
+                    label: 'Phone Number',
+                    controller: _phoneController,
+                    inputType: TextInputType.phone,
+                    validator: (v) => v == null || v.length < 10
+                        ? 'Enter phone number'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   _buildInputField(

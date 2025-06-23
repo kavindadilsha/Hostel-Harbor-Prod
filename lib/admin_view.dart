@@ -69,11 +69,13 @@ class ViewBookingsPage extends StatelessWidget {
                   final seekerEmail = data['seekerEmail'] ?? 'No Email';
                   final seekerPhone = data['seekerPhone'] ?? 'No Phone';
                   final paymentMethod = data['paymentMethod'] ?? 'N/A';
-                  final amount = data['amount'] ?? 'N/A';
+                  final amount = data['placeData']['price'] ?? 'N/A';
                   final timestamp = data['createdAt'];
                   final date = timestamp is Timestamp
                       ? timestamp.toDate().toString().split('.')[0]
                       : 'N/A';
+
+                  final imageUrl = data['placeData']?['imageUrl'];
 
                   return Card(
                     elevation: 4,
@@ -88,12 +90,17 @@ class ViewBookingsPage extends StatelessWidget {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              'assets/3.jpg',
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                            ),
+                            child: imageUrl != null
+                                ? Image.network(
+                                    imageUrl,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                        Icons.image_not_supported,
+                                        size: 80),
+                                  )
+                                : const Icon(Icons.photo, size: 80),
                           ),
                           const SizedBox(width: 16),
                           Expanded(

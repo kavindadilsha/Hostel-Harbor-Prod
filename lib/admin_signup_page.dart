@@ -27,28 +27,28 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
     super.dispose();
   }
 
-  Future<void> signUpUser(String name, String email, String password) async {
+  Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user!.uid)
+          .doc(credential.user!.uid)
           .set({
-        'name': name,
-        'email': email,
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
         'role': 'admin',
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signup successful')),
-      );
 
       Navigator.pushReplacementNamed(context, '/login/admin');
     } on FirebaseAuthException catch (e) {
@@ -66,7 +66,7 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
     }
   }
 
-  Future<void> signUpWithGoogle() async {
+  Future<void> _signUpWithGoogle() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -79,38 +79,35 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
+      final GoogleSignInAuthentication auth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: auth.accessToken,
+        idToken: auth.idToken,
       );
 
-      final UserCredential userCredential =
+      final userCred =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final docRef = FirebaseFirestore.instance
+      final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user!.uid);
+          .doc(userCred.user!.uid)
+          .get();
 
-      final docSnapshot = await docRef.get();
-      if (!docSnapshot.exists) {
-        await docRef.set({
-          'name': googleUser.displayName ?? '',
-          'email': googleUser.email,
+      if (!doc.exists) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCred.user!.uid)
+            .set({
+          'name': userCred.user!.displayName ?? '',
+          'email': userCred.user!.email ?? '',
           'role': 'admin',
         });
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google signup successful')),
-      );
-
       Navigator.pushReplacementNamed(context, '/admin');
     } catch (e) {
       setState(() {
-        _errorMessage = 'Google Sign-Up failed: $e';
+        _errorMessage = 'Google sign-up failed: $e';
       });
     } finally {
       setState(() {
@@ -119,148 +116,155 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
     }
   }
 
-  Widget _buildGoogleButton() {
-    return OutlinedButton.icon(
-      onPressed: signUpWithGoogle,
-      icon: Image.asset('assets/google_logo.png', height: 24),
-      label: const Text('Sign Up with Google'),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        side: const BorderSide(color: Color(0xFF4285F4)),
-        textStyle: const TextStyle(fontSize: 16),
-      ),
-    );
-  }
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String? Function(String?) validator,
+    bool obscure = false,
+    TextInputType inputType = TextInputType.text,
+  }) =>
+      TextFormField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: inputType,
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFFF1F1F1),
       appBar: AppBar(
-        title: const Text('Admin Signup'),
-        backgroundColor: const Color(0xFF1A237E),
-        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF1F1F1),
+        elevation: 0,
+        leading: const BackButton(color: Colors.black),
+        title: const Text(
+          'Admin Signup',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 40),
-                  Image.asset(
-                    'assets/admin.png',
-                    width: 120,
-                    height: 120,
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Create Admin Account',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A237E),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                   if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
-                  const SizedBox(height: 10),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration:
-                              const InputDecoration(labelText: 'Full Name'),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Enter your name'
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(labelText: 'Email'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Enter email';
-                            }
-                            if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                              return 'Invalid email';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration:
-                              const InputDecoration(labelText: 'Password'),
-                          validator: (value) =>
-                              value == null || value.length < 6
-                                  ? 'Minimum 6 characters'
-                                  : null,
-                        ),
-                        const SizedBox(height: 24),
-                        _isLoading
-                            ? const CircularProgressIndicator()
-                            : Column(
-                                children: [
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        if (_formKey.currentState!.validate()) {
-                                          signUpUser(
-                                            _nameController.text.trim(),
-                                            _emailController.text.trim(),
-                                            _passwordController.text.trim(),
-                                          );
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF1A237E),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 18),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        textStyle:
-                                            const TextStyle(fontSize: 18),
-                                      ),
-                                      child: const Text('Sign Up'),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildGoogleButton(),
-                                ],
-                              ),
-                      ],
-                    ),
+                  _buildInputField(
+                    label: 'Full Name',
+                    controller: _nameController,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Enter your name' : null,
                   ),
-                  const SizedBox(height: 40),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/login/admin');
+                  const SizedBox(height: 16),
+                  _buildInputField(
+                    label: 'Email',
+                    controller: _emailController,
+                    inputType: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Enter email';
+                      if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
+                        return 'Invalid email';
+                      }
+                      return null;
                     },
-                    child: const Text(
-                      "Already have an account? Log in",
-                      style: TextStyle(color: Color(0xFF1A237E)),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInputField(
+                    label: 'Password',
+                    controller: _passwordController,
+                    obscure: true,
+                    validator: (v) =>
+                        v == null || v.length < 6 ? 'Min 6 characters' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _signUp,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A237E),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Sign Up',
+                                style: TextStyle(fontSize: 16)),
+                          ),
+                        ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: const [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('OR'),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading ? null : _signUpWithGoogle,
+                      icon: Image.asset('assets/google_logo.png', height: 20),
+                      label: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        child: Text('Sign Up with Google',
+                            style: TextStyle(fontSize: 16)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        side: const BorderSide(color: Color(0xFF4285F4)),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/login/admin'),
+                    child: const Text('Already have an account? Log In'),
+                  ),
                 ],
               ),
             ),
