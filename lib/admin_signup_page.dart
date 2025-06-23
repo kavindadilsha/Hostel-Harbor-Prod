@@ -75,9 +75,7 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
         return;
       }
 
@@ -92,7 +90,6 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      // Store admin info in Firestore (if not already exists)
       final docRef = FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid);
@@ -130,6 +127,7 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: const BorderSide(color: Color(0xFF4285F4)),
         textStyle: const TextStyle(fontSize: 16),
       ),
     );
@@ -138,79 +136,134 @@ class _AdminSignupPageState extends State<AdminSignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Signup')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+      backgroundColor: const Color(0xFFFFFFFF),
+      appBar: AppBar(
+        title: const Text('Admin Signup'),
+        backgroundColor: const Color(0xFF1A237E),
+        foregroundColor: Colors.white,
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
+                  Image.asset(
+                    'assets/admin.png',
+                    width: 120,
+                    height: 120,
                   ),
-                ),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter your name' : null,
-              ),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Enter email';
-                  if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                    return 'Invalid email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) => value == null || value.length < 6
-                    ? 'Minimum 6 characters'
-                    : null,
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : Column(
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Create Admin Account',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A237E),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  const SizedBox(height: 10),
+                  Form(
+                    key: _formKey,
+                    child: Column(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              signUpUser(
-                                _nameController.text.trim(),
-                                _emailController.text.trim(),
-                                _passwordController.text.trim(),
-                              );
-                            }
-                          },
-                          child: const Text('Sign Up'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 10, 10, 87),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 95, vertical: 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            textStyle: const TextStyle(fontSize: 18),
-                          ),
+                        TextFormField(
+                          controller: _nameController,
+                          decoration:
+                              const InputDecoration(labelText: 'Full Name'),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Enter your name'
+                              : null,
                         ),
-                        const SizedBox(height: 10),
-                        _buildGoogleButton(),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(labelText: 'Email'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter email';
+                            }
+                            if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                              return 'Invalid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration:
+                              const InputDecoration(labelText: 'Password'),
+                          validator: (value) =>
+                              value == null || value.length < 6
+                                  ? 'Minimum 6 characters'
+                                  : null,
+                        ),
+                        const SizedBox(height: 24),
+                        _isLoading
+                            ? const CircularProgressIndicator()
+                            : Column(
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        if (_formKey.currentState!.validate()) {
+                                          signUpUser(
+                                            _nameController.text.trim(),
+                                            _emailController.text.trim(),
+                                            _passwordController.text.trim(),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF1A237E),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 18),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        textStyle:
+                                            const TextStyle(fontSize: 18),
+                                      ),
+                                      child: const Text('Sign Up'),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildGoogleButton(),
+                                ],
+                              ),
                       ],
                     ),
-            ],
+                  ),
+                  const SizedBox(height: 40),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login/admin');
+                    },
+                    child: const Text(
+                      "Already have an account? Log in",
+                      style: TextStyle(color: Color(0xFF1A237E)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
           ),
         ),
       ),
