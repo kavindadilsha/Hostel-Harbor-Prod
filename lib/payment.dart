@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/seeker.dart';
 
@@ -29,6 +30,7 @@ class PaymentPageState extends State<PaymentPage> {
         'placeId': widget.placeId,
         'placeData': widget.placeData,
         'paymentMethod': selectedPaymentMethod,
+        'seekerId': FirebaseAuth.instance.currentUser!.uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
